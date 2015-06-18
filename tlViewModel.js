@@ -136,7 +136,7 @@ var Triarc;
              */
             ViewModelPromise.prototype.resolve = function (resolve) {
                 var _this = this;
-                if (!this.succeeded) {
+                if (!this.succeeded && Triarc.hasNoValue(this.promise)) {
                     this.promise = resolve().then(function (result) { return _this.value = result; });
                 }
                 return this;

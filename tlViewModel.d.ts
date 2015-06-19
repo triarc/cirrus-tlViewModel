@@ -3,6 +3,7 @@ declare module Triarc.Vm {
      *
      */
     class ViewModel<TCm extends IClientModel<any>, TKey> implements IViewModel<TCm, TKey> {
+        private vmImpl;
         /**
          *
          */
@@ -11,14 +12,9 @@ declare module Triarc.Vm {
          *
          */
         private lazyMap;
-        constructor(vmImpl: IViewModelImpl<TCm, TKey>, cm: TCm);
+        constructor(vmImpl: (vm: IViewModel<TCm, TKey>) => IViewModelImpl<TCm, TKey>, cm: TCm);
         /**
          *
-         * @returns {}
-         */
-        /**
-         *
-         * @param value
          * @returns {}
          */
         id: TKey;
@@ -51,8 +47,19 @@ declare module Triarc.Vm {
 declare module Triarc.Vm {
     /**
      *
+     * An enum that represents the current state of the ViewModelPromise
+     */
+    enum EPromiseState {
+        NotResolved = 0,
+        Resolving = 1,
+        Resolved = 2,
+        Failed = 3,
+    }
+    /**
+     *
      */
     class ViewModelPromise<TResult> {
+        private resolveFn;
         /**
          * The result(s) of the fetched promise value
          */
@@ -62,13 +69,15 @@ declare module Triarc.Vm {
          */
         protected $promise: angular.IPromise<TResult>;
         /**
-         * Used to determin if the fetched results was successful or not
+         * The current state of the promise
          */
-        succeeded: boolean;
+        private $state;
+        constructor(resolveFn: () => ng.IPromise<TResult>);
         /**
-         * Used to determin if the fetched results was not successful
+         * Returns the current state of the ViewModelPromise
+         * @returns {}
          */
-        failed: boolean;
+        state: EPromiseState;
         /**
          * The promise fetching the results
          * @returns {}
@@ -80,11 +89,16 @@ declare module Triarc.Vm {
          */
         promise: ng.IPromise<TResult>;
         /**
+         * Clears down the ViewModel promise to its default values
+         * @returns {}
+         */
+        clear(): void;
+        /**
          * Performs the fetch for the results using the function (returning a promise) and then sets the values
          * @param resolve
          * @returns {}
          */
-        resolve(resolve: () => angular.IPromise<TResult>): ViewModelPromise<TResult>;
+        resolve(): ViewModelPromise<TResult>;
     }
 }
 declare module Triarc.Vm {
@@ -110,7 +124,7 @@ declare module Triarc.Vm {
         toCm(): TCm;
         reset(): void;
         clone(): IViewModelImpl<TCm, TKey>;
-        update(cm: TCm): any;
+        updateCm(cm: TCm): any;
     }
 }
 declare module Triarc.Vm {
@@ -118,7 +132,9 @@ declare module Triarc.Vm {
      *
      */
     class ViewModelRefStore<TCm extends IClientModel<any>, TVm extends IViewModel<any, any>, TKey> {
+        private defaultFactoryFn;
         protected referenceMap: Map<TKey, TVm>;
+        constructor(defaultFactoryFn: (cm: TCm) => TVm);
         protected getTimestampFromVm(entity: TVm): number;
         /**
          *
@@ -133,7 +149,7 @@ declare module Triarc.Vm {
          * @param createVmCallback
          * @returns {}
          */
-        protected updateViewModel(entityCm: TCm, viewModel: TVm, createVmCallback: (cm: TCm) => TVm): void;
+        protected updateViewModel(entityCm: TCm, viewModel: TVm, createVmCallback?: (cm: TCm) => TVm): void;
         /**
          *
          * @param entities
@@ -141,7 +157,7 @@ declare module Triarc.Vm {
          * @param isChanged
          * @returns {}
          */
-        attachMultipleAndGet(entities: TCm[], createVmCallback: (cm: TCm) => TVm, isChanged?: {
+        attachMultipleAndGet(entities: TCm[], createVmCallback?: (cm: TCm) => TVm, isChanged?: {
             isChanged?: boolean;
         }): TVm[];
         /**
@@ -152,7 +168,7 @@ declare module Triarc.Vm {
          * @param updateOnSameTimestamp
          * @returns {}
          */
-        attachAndGet(entityCm: TCm, createVmCallback: (cm: TCm) => TVm, isChanged?: {
+        attachAndGet(entityCm: TCm, createVmCallback?: (cm: TCm) => TVm, isChanged?: {
             isChanged?: boolean;
         }, updateOnSameTimestamp?: boolean): TVm;
         /**
@@ -162,7 +178,7 @@ declare module Triarc.Vm {
          * @param filterUnchaged
          * @returns {}
          */
-        attachChangeSet(changeSet: IChangeSet<TCm, TKey>, createVmCallback: (cm: TCm) => TVm, filterUnchaged?: boolean): IChangeSet<TVm, TKey>;
+        attachChangeSet(changeSet: IChangeSet<TCm, TKey>, createVmCallback?: (cm: TCm) => TVm, filterUnchaged?: boolean): IChangeSet<TVm, TKey>;
         /**
          *
          * @param id

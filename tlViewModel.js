@@ -7,6 +7,7 @@ var Triarc;
          */
         var ViewModel = (function () {
             function ViewModel(vmImpl, cm) {
+                this.vmImpl = vmImpl;
                 /**
                  *
                  */
@@ -21,14 +22,6 @@ var Triarc;
                 get: function () {
                     return this.$cm.id;
                 },
-                /**
-                 *
-                 * @param value
-                 * @returns {}
-                 */
-                set: function (value) {
-                    this.$cm.id = value;
-                },
                 enumerable: true,
                 configurable: true
             });
@@ -38,7 +31,7 @@ var Triarc;
              * @returns {}
              */
             ViewModel.prototype.update = function (cm) {
-                this.$cm = cm;
+                this.vmImpl(this).updateCm(cm);
             };
             Object.defineProperty(ViewModel.prototype, "timestamp", {
                 /**
@@ -89,22 +82,38 @@ var Triarc;
     (function (Vm) {
         /**
          *
+         * An enum that represents the current state of the ViewModelPromise
+         */
+        (function (EPromiseState) {
+            EPromiseState[EPromiseState["NotResolved"] = 0] = "NotResolved";
+            EPromiseState[EPromiseState["Resolving"] = 1] = "Resolving";
+            EPromiseState[EPromiseState["Resolved"] = 2] = "Resolved";
+            EPromiseState[EPromiseState["Failed"] = 3] = "Failed";
+        })(Vm.EPromiseState || (Vm.EPromiseState = {}));
+        var EPromiseState = Vm.EPromiseState;
+        /**
+         *
          */
         var ViewModelPromise = (function () {
-            function ViewModelPromise() {
+            function ViewModelPromise(resolveFn) {
+                this.resolveFn = resolveFn;
                 /**
                  * The result(s) of the fetched promise value
                  */
                 this.value = null;
-                /**
-                 * Used to determin if the fetched results was successful or not
-                 */
-                this.succeeded = false;
-                /**
-                 * Used to determin if the fetched results was not successful
-                 */
-                this.failed = false;
+                this.clear();
             }
+            Object.defineProperty(ViewModelPromise.prototype, "state", {
+                /**
+                 * Returns the current state of the ViewModelPromise
+                 * @returns {}
+                 */
+                get: function () {
+                    return this.$state;
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(ViewModelPromise.prototype, "promise", {
                 /**
                  * The promise fetching the results
@@ -120,24 +129,31 @@ var Triarc;
                  */
                 set: function (val) {
                     var _this = this;
-                    this.succeeded = false;
-                    this.failed = false;
+                    this.state = 1 /* Resolving */;
                     this.value = null;
                     this.$promise = val;
-                    this.$promise.then(function () { return _this.succeeded = true; }, function () { return _this.failed = true; });
+                    this.$promise.then(function () { return _this.state = 2 /* Resolved */; }, function () { return _this.state = 3 /* Failed */; });
                 },
                 enumerable: true,
                 configurable: true
             });
             /**
+             * Clears down the ViewModel promise to its default values
+             * @returns {}
+             */
+            ViewModelPromise.prototype.clear = function () {
+                this.state = 0 /* NotResolved */;
+                this.promise = null;
+            };
+            /**
              * Performs the fetch for the results using the function (returning a promise) and then sets the values
              * @param resolve
              * @returns {}
              */
-            ViewModelPromise.prototype.resolve = function (resolve) {
+            ViewModelPromise.prototype.resolve = function () {
                 var _this = this;
-                if (!this.succeeded && Triarc.hasNoValue(this.promise)) {
-                    this.promise = resolve().then(function (result) { return _this.value = result; });
+                if ((this.state !== 1 /* Resolving */ || this.state !== 2 /* Resolved */ || this.state !== 3 /* Failed */) && Triarc.hasNoValue(this.promise)) {
+                    this.promise = this.resolveFn().then(function (result) { return _this.value = result; });
                 }
                 return this;
             };
@@ -154,7 +170,8 @@ var Triarc;
          *
          */
         var ViewModelRefStore = (function () {
-            function ViewModelRefStore() {
+            function ViewModelRefStore(defaultFactoryFn) {
+                this.defaultFactoryFn = defaultFactoryFn;
                 this.referenceMap = new Map();
             }
             ViewModelRefStore.prototype.getTimestampFromVm = function (entity) {
@@ -189,8 +206,9 @@ var Triarc;
             ViewModelRefStore.prototype.attachMultipleAndGet = function (entities, createVmCallback, isChanged) {
                 var _this = this;
                 var result = [];
+                var createVmFn = angular.isFunction(createVmCallback) ? createVmCallback : this.defaultFactoryFn;
                 if (angular.isArray(entities)) {
-                    entities.forEach(function (e) { return result.push(_this.attachAndGet(e, createVmCallback, isChanged)); });
+                    entities.forEach(function (e) { return result.push(_this.attachAndGet(e, createVmFn, isChanged)); });
                 }
                 return result;
             };
@@ -204,6 +222,7 @@ var Triarc;
              */
             ViewModelRefStore.prototype.attachAndGet = function (entityCm, createVmCallback, isChanged, updateOnSameTimestamp) {
                 if (updateOnSameTimestamp === void 0) { updateOnSameTimestamp = false; }
+                var createVmFn = angular.isFunction(createVmCallback) ? createVmCallback : this.defaultFactoryFn;
                 var entityId = entityCm.id;
                 if (angular.isObject(isChanged)) {
                     isChanged.isChanged = true;
@@ -219,11 +238,11 @@ var Triarc;
                     var newTimestamp = this.getTimestampFromCm(entityCm);
                     if (existingTimestamp == null || existingTimestamp < newTimestamp) {
                         console.log('override loaded entity:' + entityId + "   old:" + existingTimestamp + "   new:" + newTimestamp);
-                        this.updateViewModel(entityCm, existingVm, createVmCallback);
+                        this.updateViewModel(entityCm, existingVm, createVmFn);
                     }
                     else if (existingTimestamp === newTimestamp) {
                         if (updateOnSameTimestamp) {
-                            this.updateViewModel(entityCm, existingVm, createVmCallback);
+                            this.updateViewModel(entityCm, existingVm, createVmFn);
                         }
                         else {
                             isChanged.isChanged = false;
@@ -235,7 +254,7 @@ var Triarc;
                     }
                     return existingVm;
                 }
-                var newVm = createVmCallback(entityCm);
+                var newVm = createVmFn(entityCm);
                 this.referenceMap.set(entityId, newVm);
                 return newVm;
             };
@@ -249,13 +268,14 @@ var Triarc;
             ViewModelRefStore.prototype.attachChangeSet = function (changeSet, createVmCallback, filterUnchaged) {
                 var _this = this;
                 if (filterUnchaged === void 0) { filterUnchaged = true; }
+                var createVmFn = angular.isFunction(createVmCallback) ? createVmCallback : this.defaultFactoryFn;
                 var added = [];
                 if (angular.isArray(changeSet.added)) {
                     changeSet.added.forEach(function (t) {
                         var isChanged = {
                             isChanged: false
                         };
-                        var attachClientModel = _this.attachAndGet(t, createVmCallback, isChanged);
+                        var attachClientModel = _this.attachAndGet(t, createVmFn, isChanged);
                         if (isChanged.isChanged || !filterUnchaged)
                             added.push(attachClientModel);
                     });
@@ -266,7 +286,7 @@ var Triarc;
                         var isChanged = {
                             isChanged: false
                         };
-                        var attachClientModel = _this.attachAndGet(t, createVmCallback, isChanged);
+                        var attachClientModel = _this.attachAndGet(t, createVmFn, isChanged);
                         if (isChanged.isChanged || !filterUnchaged)
                             updated.push(attachClientModel);
                     });
@@ -277,7 +297,7 @@ var Triarc;
                 return {
                     deleted: changeSet.deleted,
                     added: added,
-                    updated: updated,
+                    updated: updated
                 };
             };
             /**

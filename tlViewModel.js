@@ -129,7 +129,7 @@ var Triarc;
                  */
                 set: function (val) {
                     var _this = this;
-                    this.state = 1 /* Resolving */;
+                    this.$state = 1 /* Resolving */;
                     this.value = null;
                     this.$promise = val;
                     this.$promise.then(function () { return _this.state = 2 /* Resolved */; }, function () { return _this.state = 3 /* Failed */; });
@@ -142,7 +142,7 @@ var Triarc;
              * @returns {}
              */
             ViewModelPromise.prototype.clear = function () {
-                this.state = 0 /* NotResolved */;
+                this.$state = 0 /* NotResolved */;
                 this.promise = null;
             };
             /**

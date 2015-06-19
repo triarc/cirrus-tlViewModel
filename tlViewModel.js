@@ -143,7 +143,7 @@ var Triarc;
              */
             ViewModelPromise.prototype.clear = function () {
                 this.$state = 0 /* NotResolved */;
-                this.promise = null;
+                this.$promise = null;
             };
             /**
              * Performs the fetch for the results using the function (returning a promise) and then sets the values

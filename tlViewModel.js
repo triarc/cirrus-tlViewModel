@@ -132,7 +132,7 @@ var Triarc;
                     this.$state = 1 /* Resolving */;
                     this.value = null;
                     this.$promise = val;
-                    this.$promise.then(function () { return _this.state = 2 /* Resolved */; }, function () { return _this.state = 3 /* Failed */; });
+                    this.$promise.then(function () { return _this.$state = 2 /* Resolved */; }, function () { return _this.$state = 3 /* Failed */; });
                 },
                 enumerable: true,
                 configurable: true
@@ -152,7 +152,7 @@ var Triarc;
              */
             ViewModelPromise.prototype.resolve = function () {
                 var _this = this;
-                if ((this.state !== 1 /* Resolving */ || this.state !== 2 /* Resolved */ || this.state !== 3 /* Failed */) && Triarc.hasNoValue(this.promise)) {
+                if ((this.$state !== 1 /* Resolving */ || this.$state !== 2 /* Resolved */ || this.$state !== 3 /* Failed */) && Triarc.hasNoValue(this.$promise)) {
                     this.promise = this.resolveFn().then(function (result) { return _this.value = result; });
                 }
                 return this;

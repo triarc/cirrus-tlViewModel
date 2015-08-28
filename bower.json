@@ -1,9 +1,6 @@
 {
   "name": "cirrus-tlViewModel",
-  "version": "0.0.7",
-  "authors": [
-    "Marco Bachmann <mb@triarc-labs.com>"
-  ],
+  "version": "0.0.8",
   "main": "tlViewModel.js",
   "moduleType": [
     "globals"
@@ -21,6 +18,6 @@
   },
   "endpoint": "https://github.com/triarc/cirrus-tlViewModel.git",
   "dependencies": {
-    "cirrus-tlArray": "~0.0.8"
+    "cirrus-tlArray": "^0.0.8"
   }
 }

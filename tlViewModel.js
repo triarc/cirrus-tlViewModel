@@ -60,7 +60,7 @@ var Triarc;
              */
             ViewModel.prototype.lazyLoad = function (key, resolve, emptyDefault) {
                 var result = this.lazyMap.get(key);
-                if (result === null) {
+                if (angular.isUndefined(result)) {
                     result = resolve();
                     if (angular.isDefined(result) && result !== null) {
                         this.lazyMap.set(key, result);

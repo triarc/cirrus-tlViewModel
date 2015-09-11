@@ -87,7 +87,7 @@ declare module Triarc.Vm {
          * @param val
          * @returns {}
          */
-        promise: ng.IPromise<TResult>;
+        promise: angular.IPromise<TResult>;
         /**
          * Clears down the ViewModel promise to its default values
          * @returns {}

@@ -129,10 +129,10 @@ var Triarc;
                  */
                 set: function (val) {
                     var _this = this;
-                    this.$state = 1 /* Resolving */;
+                    this.$state = EPromiseState.Resolving;
                     this.value = null;
                     this.$promise = val;
-                    this.$promise.then(function () { return _this.$state = 2 /* Resolved */; }, function () { return _this.$state = 3 /* Failed */; });
+                    this.$promise.then(function () { return _this.$state = EPromiseState.Resolved; }, function () { return _this.$state = EPromiseState.Failed; });
                 },
                 enumerable: true,
                 configurable: true
@@ -142,7 +142,7 @@ var Triarc;
              * @returns {}
              */
             ViewModelPromise.prototype.clear = function () {
-                this.$state = 0 /* NotResolved */;
+                this.$state = EPromiseState.NotResolved;
                 this.$promise = null;
             };
             /**
@@ -152,7 +152,7 @@ var Triarc;
              */
             ViewModelPromise.prototype.resolve = function () {
                 var _this = this;
-                if ((this.$state !== 1 /* Resolving */ || this.$state !== 2 /* Resolved */ || this.$state !== 3 /* Failed */) && Triarc.hasNoValue(this.$promise)) {
+                if ((this.$state !== EPromiseState.Resolving || this.$state !== EPromiseState.Resolved || this.$state !== EPromiseState.Failed) && Triarc.hasNoValue(this.$promise)) {
                     this.promise = this.resolveFn().then(function (result) { return _this.value = result; });
                 }
                 return this;
@@ -338,8 +338,7 @@ var Triarc;
                 if (!angular.isObject(injector))
                     return;
                 injector.invoke([
-                    dataControllerId,
-                    function (datadataController) {
+                    dataControllerId, function (datadataController) {
                         datadataController.applyChangeSet(changeSet);
                     }
                 ]);

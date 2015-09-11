@@ -72,7 +72,7 @@ declare module Triarc.Vm {
          * The current state of the promise
          */
         private $state;
-        constructor(resolveFn: () => ng.IPromise<TResult>);
+        constructor(resolveFn: () => angular.IPromise<TResult>);
         /**
          * Returns the current state of the ViewModelPromise
          * @returns {}

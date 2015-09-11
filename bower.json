@@ -1,6 +1,6 @@
 {
   "name": "cirrus-tlViewModel",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "main": "tlViewModel.js",
   "moduleType": [
     "globals"

@@ -152,7 +152,7 @@ var Triarc;
              */
             ViewModelPromise.prototype.resolve = function () {
                 var _this = this;
-                if ((this.$state !== EPromiseState.Resolving || this.$state !== EPromiseState.Resolved || this.$state !== EPromiseState.Failed) && Triarc.hasNoValue(this.$promise)) {
+                if (Triarc.hasNoValue(this.$promise)) {
                     this.promise = this.resolveFn().then(function (result) { return _this.value = result; });
                 }
                 return this;

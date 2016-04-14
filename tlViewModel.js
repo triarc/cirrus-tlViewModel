@@ -72,7 +72,7 @@ var Triarc;
                 return result;
             };
             return ViewModel;
-        })();
+        }());
         Vm.ViewModel = ViewModel;
     })(Vm = Triarc.Vm || (Triarc.Vm = {}));
 })(Triarc || (Triarc = {}));
@@ -158,8 +158,106 @@ var Triarc;
                 return this;
             };
             return ViewModelPromise;
-        })();
+        }());
         Vm.ViewModelPromise = ViewModelPromise;
+    })(Vm = Triarc.Vm || (Triarc.Vm = {}));
+})(Triarc || (Triarc = {}));
+var Triarc;
+(function (Triarc) {
+    var Vm;
+    (function (Vm) {
+        var EntityLoadRegistry = (function () {
+            function EntityLoadRegistry($q, loadCallback, $referenceStore, debounceIntervall) {
+                this.$q = $q;
+                this.loadCallback = loadCallback;
+                this.$referenceStore = $referenceStore;
+                this.debounceIntervall = debounceIntervall;
+                this.$promises = new Map();
+                this.timeoutRunning = null;
+                this.debounceDefer = null;
+                this.debouncedIds = [];
+            }
+            EntityLoadRegistry.prototype.get = function (ids, args) {
+                var _this = this;
+                var notLoaded = [];
+                ids.forEach(function (id) {
+                    if (!_this.$referenceStore.has(id)) {
+                        notLoaded.add(id);
+                    }
+                });
+                if (!notLoaded.any()) {
+                    return this.$q.when(ids.toEnumerable().select(function (id) { return _this.$referenceStore.get(id); }).toArray());
+                }
+                var notRequested = new Array();
+                var existingPromises = new Array();
+                notLoaded.forEach(function (id) {
+                    var existinPromise = _this.$promises.get(id);
+                    if (angular.isObject(existinPromise)) {
+                        existingPromises.add(existinPromise);
+                    }
+                    else {
+                        notRequested.add(id);
+                    }
+                });
+                if (notRequested.any()) {
+                    var newPromise = this.startLoadingIds(notLoaded, args);
+                    existingPromises.add(newPromise);
+                }
+                return this.$q.all(existingPromises).then(function (promisResults) {
+                    var entities = promisResults.toEnumerable().selectMany(function (e) { return e; })
+                        .where(function (e) { return ids.contains(e.id); }).toArray();
+                    return _this.$referenceStore.attachMultipleAndGet(entities);
+                });
+            };
+            EntityLoadRegistry.prototype.startLoadingIds = function (ids, args) {
+                if (angular.isNumber(this.debounceIntervall)) {
+                    return this.debounceLoading(ids, args);
+                }
+                else {
+                    return this.loadIds(ids, args);
+                }
+            };
+            EntityLoadRegistry.prototype.debounceLoading = function (ids, args) {
+                var _this = this;
+                this.debouncedIds.addRange(ids);
+                if (angular.isNumber(this.timeoutRunning)) {
+                    // cancel
+                    clearTimeout(this.timeoutRunning);
+                }
+                if (!angular.isObject(this.debounceDefer)) {
+                    this.debounceDefer = this.$q.defer();
+                }
+                // since making http request anyway triggers a global digest, don't use $apply
+                this.timeoutRunning = setTimeout(function () {
+                    var defer = _this.debounceDefer;
+                    _this.loadIds(_this.debouncedIds.toEnumerable().distinct().toArray(), args).then(function (e) {
+                        defer.resolve(e);
+                    }, _this.debounceDefer.reject);
+                    _this.resetDebounce();
+                }, this.debounceIntervall);
+                return this.debounceDefer.promise.then(function (r) { return r.toEnumerable().where(function (e) { return ids.toEnumerable().contains(e.id); }).toArray(); });
+            };
+            EntityLoadRegistry.prototype.resetDebounce = function () {
+                this.debounceDefer = null;
+                this.debouncedIds.clear();
+                this.timeoutRunning = null;
+            };
+            EntityLoadRegistry.prototype.loadIds = function (ids, args) {
+                var _this = this;
+                var newPromise = this.loadCallback(ids, args);
+                ids.forEach(function (id) {
+                    _this.$promises.set(id, newPromise);
+                });
+                newPromise.finally(function () {
+                    ids.forEach(function (id) {
+                        _this.$promises.delete(id);
+                    });
+                });
+                return newPromise;
+            };
+            return EntityLoadRegistry;
+        }());
+        Vm.EntityLoadRegistry = EntityLoadRegistry;
     })(Vm = Triarc.Vm || (Triarc.Vm = {}));
 })(Triarc || (Triarc = {}));
 var Triarc;
@@ -344,7 +442,7 @@ var Triarc;
                 ]);
             };
             return ViewModelRefStore;
-        })();
+        }());
         Vm.ViewModelRefStore = ViewModelRefStore;
     })(Vm = Triarc.Vm || (Triarc.Vm = {}));
 })(Triarc || (Triarc = {}));

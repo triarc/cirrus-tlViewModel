@@ -166,8 +166,8 @@ var Triarc;
 (function (Triarc) {
     var Vm;
     (function (Vm) {
-        var EntityLoadRegistry = (function () {
-            function EntityLoadRegistry($q, loadCallback, $referenceStore, debounceIntervall) {
+        var ViewModelLoadRegistry = (function () {
+            function ViewModelLoadRegistry($q, loadCallback, $referenceStore, debounceIntervall) {
                 this.$q = $q;
                 this.loadCallback = loadCallback;
                 this.$referenceStore = $referenceStore;
@@ -177,7 +177,7 @@ var Triarc;
                 this.debounceDefer = null;
                 this.debouncedIds = [];
             }
-            EntityLoadRegistry.prototype.get = function (ids, args) {
+            ViewModelLoadRegistry.prototype.get = function (ids, args) {
                 var _this = this;
                 var notLoaded = [];
                 ids.forEach(function (id) {
@@ -209,7 +209,7 @@ var Triarc;
                     return _this.$referenceStore.attachMultipleAndGet(entities);
                 });
             };
-            EntityLoadRegistry.prototype.startLoadingIds = function (ids, args) {
+            ViewModelLoadRegistry.prototype.startLoadingIds = function (ids, args) {
                 if (angular.isNumber(this.debounceIntervall)) {
                     return this.debounceLoading(ids, args);
                 }
@@ -217,7 +217,7 @@ var Triarc;
                     return this.loadIds(ids, args);
                 }
             };
-            EntityLoadRegistry.prototype.debounceLoading = function (ids, args) {
+            ViewModelLoadRegistry.prototype.debounceLoading = function (ids, args) {
                 var _this = this;
                 this.debouncedIds.addRange(ids);
                 if (angular.isNumber(this.timeoutRunning)) {
@@ -237,12 +237,12 @@ var Triarc;
                 }, this.debounceIntervall);
                 return this.debounceDefer.promise.then(function (r) { return r.toEnumerable().where(function (e) { return ids.toEnumerable().contains(e.id); }).toArray(); });
             };
-            EntityLoadRegistry.prototype.resetDebounce = function () {
+            ViewModelLoadRegistry.prototype.resetDebounce = function () {
                 this.debounceDefer = null;
                 this.debouncedIds.clear();
                 this.timeoutRunning = null;
             };
-            EntityLoadRegistry.prototype.loadIds = function (ids, args) {
+            ViewModelLoadRegistry.prototype.loadIds = function (ids, args) {
                 var _this = this;
                 var newPromise = this.loadCallback(ids, args);
                 ids.forEach(function (id) {
@@ -255,9 +255,9 @@ var Triarc;
                 });
                 return newPromise;
             };
-            return EntityLoadRegistry;
+            return ViewModelLoadRegistry;
         }());
-        Vm.EntityLoadRegistry = EntityLoadRegistry;
+        Vm.ViewModelLoadRegistry = ViewModelLoadRegistry;
     })(Vm = Triarc.Vm || (Triarc.Vm = {}));
 })(Triarc || (Triarc = {}));
 var Triarc;

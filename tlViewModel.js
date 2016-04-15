@@ -173,7 +173,6 @@ var Triarc;
                 this.$referenceStore = $referenceStore;
                 this.debounceIntervall = debounceIntervall;
                 this.$promises = new Map();
-                this.$instanceId = Triarc.generateGuid();
                 this.timeoutRunning = null;
                 this.debounceDefer = null;
                 this.debouncedIds = [];
@@ -227,23 +226,19 @@ var Triarc;
                 this.debouncedIds.addRange(ids);
                 if (angular.isNumber(this.timeoutRunning)) {
                     // cancel
-                    console.log(this.$instanceId + " => timeout cleared:" + this.timeoutRunning);
                     clearTimeout(this.timeoutRunning);
                 }
                 if (!angular.isObject(this.debounceDefer)) {
                     this.debounceDefer = this.$q.defer();
                 }
-                var timeoutNumber = 0;
                 // since making http request anyway triggers a global digest, don't use $apply
                 this.timeoutRunning = setTimeout(function () {
-                    console.log(_this.$instanceId + " => timeout elapsed:" + timeoutNumber);
                     var defer = _this.debounceDefer;
                     _this.loadIds(_this.debouncedIds.toEnumerable().distinct().toArray(), args).then(function (e) {
                         defer.resolve(e);
                     }, _this.debounceDefer.reject);
                     _this.resetDebounce();
                 }, this.debounceIntervall);
-                timeoutNumber = this.timeoutRunning;
                 return this.debounceDefer.promise.then(function (r) { return r.toEnumerable().where(function (e) { return ids.toEnumerable().contains(e.id); }).toArray(); });
             };
             ViewModelLoadRegistry.prototype.resetDebounce = function () {

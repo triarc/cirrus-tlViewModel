@@ -145,8 +145,9 @@ var Triarc;
                 this.$state = EPromiseState.NotResolved;
                 this.$promise = null;
             };
-            ViewModelPromise.prototype.resolveManually = function (result) {
-                this.$promise = result;
+            ViewModelPromise.prototype.resolveManually = function ($q, result) {
+                this.$promise = $q.when(result);
+                this.value = result;
                 this.$state = EPromiseState.Resolved;
             };
             /**

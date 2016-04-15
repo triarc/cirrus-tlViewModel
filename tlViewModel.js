@@ -145,6 +145,10 @@ var Triarc;
                 this.$state = EPromiseState.NotResolved;
                 this.$promise = null;
             };
+            ViewModelPromise.prototype.resolveManually = function (result) {
+                this.$promise = result;
+                this.$state = EPromiseState.Resolved;
+            };
             /**
              * Performs the fetch for the results using the function (returning a promise) and then sets the values
              * @param resolve

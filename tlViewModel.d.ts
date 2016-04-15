@@ -93,6 +93,7 @@ declare module Triarc.Vm {
          * @returns {}
          */
         clear(): void;
+        resolveManually(result: angular.IPromise<TResult>): void;
         /**
          * Performs the fetch for the results using the function (returning a promise) and then sets the values
          * @param resolve

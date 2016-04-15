@@ -177,11 +177,15 @@ var Triarc;
                 this.debounceDefer = null;
                 this.debouncedIds = [];
             }
-            ViewModelLoadRegistry.prototype.get = function (ids, forceReload, args) {
+            ViewModelLoadRegistry.prototype.get = function (ids, options) {
                 var _this = this;
+                if (options === void 0) { options = {}; }
+                if (angular.isUndefined(options.forceReload)) {
+                    options.forceReload = false;
+                }
                 var notLoaded = [];
                 ids.forEach(function (id) {
-                    if (!_this.$referenceStore.has(id) || forceReload) {
+                    if (!_this.$referenceStore.has(id) || options.forceReload) {
                         notLoaded.add(id);
                     }
                 });
@@ -200,7 +204,7 @@ var Triarc;
                     }
                 });
                 if (notRequested.any()) {
-                    var newPromise = this.startLoadingIds(notLoaded, args);
+                    var newPromise = this.startLoadingIds(notLoaded, options.additionalRequestArgs);
                     existingPromises.add(newPromise);
                 }
                 return this.$q.all(existingPromises).then(function (promisResults) {

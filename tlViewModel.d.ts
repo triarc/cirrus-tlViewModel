@@ -128,14 +128,18 @@ declare module Triarc.Vm {
     }
 }
 declare module Triarc.Vm {
-    class ViewModelLoadRegistry<TCm extends Triarc.Vm.IClientModel<TKey>, TVm extends Triarc.Vm.IViewModel<TCm, TKey>, TKey> {
+    interface IGetOptions {
+        forceReload?: boolean;
+        additionalRequestArgs?: any;
+    }
+    class ViewModelLoadRegistry<TCm extends Vm.IClientModel<TKey>, TVm extends Vm.IViewModel<TCm, TKey>, TKey> {
         private $q;
         private loadCallback;
         private $referenceStore;
         private debounceIntervall;
-        constructor($q: angular.IQService, loadCallback: (keys: TKey[], args?: any) => angular.IPromise<TCm[]>, $referenceStore: Triarc.Vm.ViewModelRefStore<TCm, TVm, TKey>, debounceIntervall?: number);
+        constructor($q: angular.IQService, loadCallback: (keys: TKey[], args?: any) => angular.IPromise<TCm[]>, $referenceStore: Vm.ViewModelRefStore<TCm, TVm, TKey>, debounceIntervall?: number);
         private $promises;
-        get(ids: TKey[], forceReload: boolean, args?: any): angular.IPromise<TVm[]>;
+        get(ids: TKey[], options?: IGetOptions): angular.IPromise<TVm[]>;
         private timeoutRunning;
         private debounceDefer;
         private debouncedIds;

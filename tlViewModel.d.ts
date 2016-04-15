@@ -132,12 +132,17 @@ declare module Triarc.Vm {
         forceReload?: boolean;
         additionalRequestArgs?: any;
     }
+    interface IEntityStoreAdapter<TCm, TVm, TKey> {
+        has(id: TKey): boolean;
+        get(id: TKey): TVm;
+        attachMultipleAndGet(entities: TCm[]): TVm[];
+    }
     class ViewModelLoadRegistry<TCm extends Vm.IClientModel<TKey>, TVm extends Vm.IViewModel<TCm, TKey>, TKey> {
         private $q;
         private loadCallback;
-        private $referenceStore;
+        private entityStoreAdapter;
         private debounceIntervall;
-        constructor($q: angular.IQService, loadCallback: (keys: TKey[], args?: any) => angular.IPromise<TCm[]>, $referenceStore: Vm.ViewModelRefStore<TCm, TVm, TKey>, debounceIntervall?: number);
+        constructor($q: angular.IQService, loadCallback: (keys: TKey[], args?: any) => angular.IPromise<TCm[]>, entityStoreAdapter: IEntityStoreAdapter<TCm, TVm, TKey>, debounceIntervall?: number);
         private $promises;
         get(ids: TKey[], options?: IGetOptions): angular.IPromise<TVm[]>;
         private timeoutRunning;

@@ -167,10 +167,10 @@ var Triarc;
     var Vm;
     (function (Vm) {
         var ViewModelLoadRegistry = (function () {
-            function ViewModelLoadRegistry($q, loadCallback, $referenceStore, debounceIntervall) {
+            function ViewModelLoadRegistry($q, loadCallback, entityStoreAdapter, debounceIntervall) {
                 this.$q = $q;
                 this.loadCallback = loadCallback;
-                this.$referenceStore = $referenceStore;
+                this.entityStoreAdapter = entityStoreAdapter;
                 this.debounceIntervall = debounceIntervall;
                 this.$promises = new Map();
                 this.timeoutRunning = null;
@@ -185,12 +185,12 @@ var Triarc;
                 }
                 var notLoaded = [];
                 ids.forEach(function (id) {
-                    if (!_this.$referenceStore.has(id) || options.forceReload) {
+                    if (!_this.entityStoreAdapter.has(id) || options.forceReload) {
                         notLoaded.add(id);
                     }
                 });
                 if (!notLoaded.any()) {
-                    return this.$q.when(ids.toEnumerable().select(function (id) { return _this.$referenceStore.get(id); }).toArray());
+                    return this.$q.when(ids.toEnumerable().select(function (id) { return _this.entityStoreAdapter.get(id); }).toArray());
                 }
                 var notRequested = new Array();
                 var existingPromises = new Array();
@@ -210,7 +210,7 @@ var Triarc;
                 return this.$q.all(existingPromises).then(function (promisResults) {
                     var entities = promisResults.toEnumerable().selectMany(function (e) { return e; })
                         .where(function (e) { return ids.contains(e.id); }).toArray();
-                    return _this.$referenceStore.attachMultipleAndGet(entities);
+                    return _this.entityStoreAdapter.attachMultipleAndGet(entities);
                 });
             };
             ViewModelLoadRegistry.prototype.startLoadingIds = function (ids, args) {

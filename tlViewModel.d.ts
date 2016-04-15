@@ -135,7 +135,7 @@ declare module Triarc.Vm {
         private debounceIntervall;
         constructor($q: angular.IQService, loadCallback: (keys: TKey[], args?: any) => angular.IPromise<TCm[]>, $referenceStore: Triarc.Vm.ViewModelRefStore<TCm, TVm, TKey>, debounceIntervall?: number);
         private $promises;
-        get(ids: TKey[], args?: any): angular.IPromise<TVm[]>;
+        get(ids: TKey[], forceReload: boolean, args?: any): angular.IPromise<TVm[]>;
         private timeoutRunning;
         private debounceDefer;
         private debouncedIds;

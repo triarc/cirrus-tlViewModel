@@ -177,11 +177,11 @@ var Triarc;
                 this.debounceDefer = null;
                 this.debouncedIds = [];
             }
-            ViewModelLoadRegistry.prototype.get = function (ids, args) {
+            ViewModelLoadRegistry.prototype.get = function (ids, forceReload, args) {
                 var _this = this;
                 var notLoaded = [];
                 ids.forEach(function (id) {
-                    if (!_this.$referenceStore.has(id)) {
+                    if (!_this.$referenceStore.has(id) || forceReload) {
                         notLoaded.add(id);
                     }
                 });

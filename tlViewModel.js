@@ -188,14 +188,18 @@ var Triarc;
                 if (angular.isUndefined(options.forceReload)) {
                     options.forceReload = false;
                 }
+                if (angular.isUndefined(options.preventDebounce)) {
+                    options.preventDebounce = false;
+                }
                 var notLoaded = [];
                 ids.forEach(function (id) {
                     if (!_this.entityStoreAdapter.has(id) || options.forceReload) {
                         notLoaded.add(id);
                     }
                 });
+                var alreadyLoadedEntities = ids.toEnumerable().select(function (id) { return _this.entityStoreAdapter.get(id); }).toArray();
                 if (!notLoaded.any()) {
-                    return this.$q.when(ids.toEnumerable().select(function (id) { return _this.entityStoreAdapter.get(id); }).toArray());
+                    return this.$q.when(alreadyLoadedEntities);
                 }
                 var notRequested = new Array();
                 var existingPromises = new Array();
@@ -209,24 +213,24 @@ var Triarc;
                     }
                 });
                 if (notRequested.any()) {
-                    var newPromise = this.startLoadingIds(notLoaded, options.additionalRequestArgs);
+                    var newPromise = this.startLoadingIds(notLoaded, options);
                     existingPromises.add(newPromise);
                 }
                 return this.$q.all(existingPromises).then(function (promisResults) {
                     var entities = promisResults.toEnumerable().selectMany(function (e) { return e; })
                         .where(function (e) { return ids.contains(e.id); }).toArray();
-                    return _this.entityStoreAdapter.attachMultipleAndGet(entities);
+                    return _this.entityStoreAdapter.attachMultipleAndGet(entities).toEnumerable().concat(alreadyLoadedEntities).toArray();
                 });
             };
-            ViewModelLoadRegistry.prototype.startLoadingIds = function (ids, args) {
-                if (angular.isNumber(this.debounceIntervall)) {
-                    return this.debounceLoading(ids, args);
+            ViewModelLoadRegistry.prototype.startLoadingIds = function (ids, options) {
+                if (angular.isNumber(this.debounceIntervall) && !options.preventDebounce) {
+                    return this.debounceLoading(ids, options);
                 }
                 else {
-                    return this.loadIds(ids, args);
+                    return this.loadIds(ids, options);
                 }
             };
-            ViewModelLoadRegistry.prototype.debounceLoading = function (ids, args) {
+            ViewModelLoadRegistry.prototype.debounceLoading = function (ids, options) {
                 var _this = this;
                 this.debouncedIds.addRange(ids);
                 if (angular.isNumber(this.timeoutRunning)) {
@@ -239,7 +243,7 @@ var Triarc;
                 // since making http request anyway triggers a global digest, don't use $apply
                 this.timeoutRunning = setTimeout(function () {
                     var defer = _this.debounceDefer;
-                    _this.loadIds(_this.debouncedIds.toEnumerable().distinct().toArray(), args).then(function (e) {
+                    _this.loadIds(_this.debouncedIds.toEnumerable().distinct().toArray(), options).then(function (e) {
                         defer.resolve(e);
                     }, _this.debounceDefer.reject);
                     _this.resetDebounce();
@@ -251,9 +255,9 @@ var Triarc;
                 this.debouncedIds.clear();
                 this.timeoutRunning = null;
             };
-            ViewModelLoadRegistry.prototype.loadIds = function (ids, args) {
+            ViewModelLoadRegistry.prototype.loadIds = function (ids, options) {
                 var _this = this;
-                var newPromise = this.loadCallback(ids, args);
+                var newPromise = this.loadCallback(ids, options.additionalRequestArgs);
                 ids.forEach(function (id) {
                     _this.$promises.set(id, newPromise);
                 });

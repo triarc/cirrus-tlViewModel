@@ -132,6 +132,7 @@ declare module Triarc.Vm {
     interface IGetOptions {
         forceReload?: boolean;
         additionalRequestArgs?: any;
+        preventDebounce?: boolean;
     }
     interface IEntityStoreAdapter<TCm, TVm, TKey> {
         has(id: TKey): boolean;
@@ -149,10 +150,10 @@ declare module Triarc.Vm {
         private timeoutRunning;
         private debounceDefer;
         private debouncedIds;
-        private startLoadingIds(ids, args);
-        private debounceLoading(ids, args);
+        private startLoadingIds(ids, options);
+        private debounceLoading(ids, options);
         private resetDebounce();
-        private loadIds(ids, args);
+        private loadIds(ids, options);
     }
 }
 declare module Triarc.Vm {

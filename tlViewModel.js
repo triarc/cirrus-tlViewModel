@@ -192,12 +192,16 @@ var Triarc;
                     options.preventDebounce = false;
                 }
                 var notLoaded = [];
+                var loadedIds = [];
                 ids.forEach(function (id) {
                     if (!_this.entityStoreAdapter.has(id) || options.forceReload) {
                         notLoaded.add(id);
                     }
+                    else {
+                        loadedIds.add(id);
+                    }
                 });
-                var alreadyLoadedEntities = ids.toEnumerable().select(function (id) { return _this.entityStoreAdapter.get(id); }).toArray();
+                var alreadyLoadedEntities = loadedIds.toEnumerable().select(function (id) { return _this.entityStoreAdapter.get(id); }).toArray();
                 if (!notLoaded.any()) {
                     return this.$q.when(alreadyLoadedEntities);
                 }

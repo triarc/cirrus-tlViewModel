@@ -256,6 +256,7 @@ var Triarc;
                     _this.resetDebounce();
                 }, this.debounceIntervall);
                 return this.debounceDefer.promise.then(function (r) {
+                    _this.entityStoreAdapter.attachMultipleAndGet(r);
                     return r.toEnumerable().where(function (e) { return ids.toEnumerable().any(function (id) { return _this.entityStoreAdapter.isKey(e, id); }); }).toArray();
                 });
             };

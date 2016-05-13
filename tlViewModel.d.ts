@@ -137,6 +137,7 @@ declare module Triarc.Vm {
     interface IEntityStoreAdapter<TCm, TVm, TKey> {
         has(id: TKey): boolean;
         get(id: TKey): TVm;
+        isKey(entity: TCm, id: TKey): boolean;
         attachMultipleAndGet(entities: TCm[]): TVm[];
     }
     class ViewModelLoadRegistry<TCm extends Vm.IClientModel<TKey>, TVm extends Vm.IViewModel<TCm, TKey>, TKey> {
@@ -214,6 +215,7 @@ declare module Triarc.Vm {
          * @returns {}
          */
         get(id: TKey): TVm;
+        isKey(entity: TCm, id: TKey): boolean;
         /**
          *
          * @param id

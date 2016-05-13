@@ -221,8 +221,11 @@ var Triarc;
                     existingPromises.add(newPromise);
                 }
                 return this.$q.all(existingPromises).then(function (promisResults) {
-                    var entities = promisResults.toEnumerable().selectMany(function (e) { return e; })
-                        .where(function (e) { return ids.contains(e.id); }).toArray();
+                    var entities = promisResults
+                        .toEnumerable()
+                        .selectMany(function (e) { return e; })
+                        .where(function (e) { return ids.toEnumerable().any(function (id) { return _this.entityStoreAdapter.isKey(e, id); }); })
+                        .toArray();
                     return _this.entityStoreAdapter.attachMultipleAndGet(entities).toEnumerable().concat(alreadyLoadedEntities).toArray();
                 });
             };
@@ -252,7 +255,9 @@ var Triarc;
                     }, _this.debounceDefer.reject);
                     _this.resetDebounce();
                 }, this.debounceIntervall);
-                return this.debounceDefer.promise.then(function (r) { return r.toEnumerable().where(function (e) { return ids.toEnumerable().contains(e.id); }).toArray(); });
+                return this.debounceDefer.promise.then(function (r) {
+                    return r.toEnumerable().where(function (e) { return ids.toEnumerable().any(function (id) { return _this.entityStoreAdapter.isKey(e, id); }); }).toArray();
+                });
             };
             ViewModelLoadRegistry.prototype.resetDebounce = function () {
                 this.debounceDefer = null;
@@ -425,6 +430,9 @@ var Triarc;
                 if (angular.isObject(vm))
                     return vm;
                 return null;
+            };
+            ViewModelRefStore.prototype.isKey = function (entity, id) {
+                return entity.id === id;
             };
             /**
              *

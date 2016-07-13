@@ -443,6 +443,9 @@ var Triarc;
             ViewModelRefStore.prototype.has = function (id) {
                 return this.referenceMap.has(id);
             };
+            ViewModelRefStore.prototype.remove = function (id) {
+                return this.referenceMap.delete(id);
+            };
             /**
              * Returns all entities. Remember, that "With great power comes great responsibility"
              * @returns {}

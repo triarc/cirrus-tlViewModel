@@ -222,6 +222,7 @@ declare module Triarc.Vm {
          * @returns {}
          */
         has(id: TKey): boolean;
+        remove(id: TKey): boolean;
         /**
          * Returns all entities. Remember, that "With great power comes great responsibility"
          * @returns {}
